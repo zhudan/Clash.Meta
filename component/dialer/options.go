@@ -6,7 +6,6 @@ var (
 	DefaultOptions     []Option
 	DefaultInterface   = atomic.NewString("")
 	DefaultRoutingMark = atomic.NewInt32(0)
-	DefaultTFO         = atomic.NewBool(false)
 )
 
 type option struct {
@@ -14,7 +13,6 @@ type option struct {
 	addrReuse     bool
 	routingMark   int
 	direct        bool
-	tfo           bool
 }
 
 type Option func(opt *option)
@@ -40,11 +38,5 @@ func WithRoutingMark(mark int) Option {
 func WithDirect() Option {
 	return func(opt *option) {
 		opt.direct = true
-	}
-}
-
-func WithTFO(tfo bool) Option {
-	return func(opt *option) {
-		opt.tfo = tfo
 	}
 }

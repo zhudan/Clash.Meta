@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Dreamacro/clash/component/resolver"
-	"github.com/database64128/tfo-go"
 	"net"
 	"net/netip"
 	"sync"
@@ -31,9 +30,6 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 
 	for _, o := range options {
 		o(opt)
-	}
-	if !opt.tfo {
-		opt.tfo = DefaultTFO.Load()
 	}
 
 	switch network {
@@ -115,10 +111,7 @@ func dialContext(ctx context.Context, network string, destination netip.Addr, po
 		return nil, fmt.Errorf("IPv6 is diabled, dialer cancel")
 	}
 
-	tfoDialer := tfo.Dialer{
-		DisableTFO: !opt.tfo,
-	}
-	return tfoDialer.DialContext(ctx, network, net.JoinHostPort(destination.String(), port))
+	return dialer.DialContext(ctx, network, net.JoinHostPort(destination.String(), port))
 }
 
 func dualStackDialContext(ctx context.Context, network, address string, opt *option) (net.Conn, error) {
