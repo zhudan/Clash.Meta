@@ -42,3 +42,9 @@ func WithDirect() Option {
 		opt.direct = true
 	}
 }
+
+func WithTFO(tfo bool) Option {
+	return func(opt *option) {
+		opt.tfo = tfo
+	}
+}

@@ -23,7 +23,6 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 	opt := &option{
 		interfaceName: DefaultInterface.Load(),
 		routingMark:   int(DefaultRoutingMark.Load()),
-		tfo:           DefaultTFO.Load(),
 	}
 
 	for _, o := range DefaultOptions {
@@ -32,6 +31,9 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 
 	for _, o := range options {
 		o(opt)
+	}
+	if !opt.tfo {
+		opt.tfo = DefaultTFO.Load()
 	}
 
 	switch network {
