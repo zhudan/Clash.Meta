@@ -55,6 +55,7 @@ type General struct {
 	EnableProcess bool         `json:"enable-process"`
 	Tun           Tun          `json:"tun"`
 	Sniffing      bool         `json:"sniffing"`
+	OutboundTfo   bool         `json:"outbound-tfo"`
 }
 
 // Inbound config
@@ -67,6 +68,7 @@ type Inbound struct {
 	Authentication []string `json:"authentication"`
 	AllowLan       bool     `json:"allow-lan"`
 	BindAddress    string   `json:"bind-address"`
+	InboundTfo     bool     `json:"inbound-tfo"`
 }
 
 // Controller config
@@ -197,6 +199,7 @@ type RawConfig struct {
 	RedirPort          int          `yaml:"redir-port"`
 	TProxyPort         int          `yaml:"tproxy-port"`
 	MixedPort          int          `yaml:"mixed-port"`
+	InboundTfo         bool         `yaml:"inbound-tfo"`
 	Authentication     []string     `yaml:"authentication"`
 	AllowLan           bool         `yaml:"allow-lan"`
 	BindAddress        string       `yaml:"bind-address"`
@@ -209,6 +212,7 @@ type RawConfig struct {
 	Secret             string       `yaml:"secret"`
 	Interface          string       `yaml:"interface-name"`
 	RoutingMark        int          `yaml:"routing-mark"`
+	OutboundTfo        bool         `yaml:"outbound-tfo"`
 	GeodataMode        bool         `yaml:"geodata-mode"`
 	GeodataLoader      string       `yaml:"geodata-loader"`
 	TCPConcurrent      bool         `yaml:"tcp-concurrent" json:"tcp-concurrent"`
@@ -423,6 +427,7 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 			MixedPort:   cfg.MixedPort,
 			AllowLan:    cfg.AllowLan,
 			BindAddress: cfg.BindAddress,
+			InboundTfo:  cfg.InboundTfo,
 		},
 		Controller: Controller{
 			ExternalController: cfg.ExternalController,
@@ -435,6 +440,7 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 		IPv6:          cfg.IPv6,
 		Interface:     cfg.Interface,
 		RoutingMark:   cfg.RoutingMark,
+		OutboundTfo:   cfg.OutboundTfo,
 		GeodataMode:   cfg.GeodataMode,
 		GeodataLoader: cfg.GeodataLoader,
 		TCPConcurrent: cfg.TCPConcurrent,
