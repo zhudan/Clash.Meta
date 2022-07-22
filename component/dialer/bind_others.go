@@ -3,6 +3,7 @@
 package dialer
 
 import (
+	"github.com/database64128/tfo-go"
 	"net"
 	"net/netip"
 	"strconv"
@@ -51,6 +52,29 @@ func lookupLocalAddr(ifaceName string, network string, destination netip.Addr, p
 	}
 
 	return nil, iface.ErrAddrNotFound
+}
+
+func bindIfaceToTFODialer(ifaceName string, dialer *tfo.Dialer, network string, destination netip.Addr) error {
+	if !destination.IsGlobalUnicast() {
+		return nil
+	}
+
+	local := uint64(0)
+	if dialer.LocalAddr != nil {
+		_, port, err := net.SplitHostPort(dialer.LocalAddr.String())
+		if err == nil {
+			local, _ = strconv.ParseUint(port, 10, 16)
+		}
+	}
+
+	addr, err := lookupLocalAddr(ifaceName, network, destination, int(local))
+	if err != nil {
+		return err
+	}
+
+	dialer.LocalAddr = addr
+
+	return nil
 }
 
 func bindIfaceToDialer(ifaceName string, dialer *net.Dialer, network string, destination netip.Addr) error {

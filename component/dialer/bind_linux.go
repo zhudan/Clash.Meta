@@ -1,6 +1,7 @@
 package dialer
 
 import (
+	"github.com/database64128/tfo-go"
 	"net"
 	"net/netip"
 	"syscall"
@@ -34,6 +35,12 @@ func bindControl(ifaceName string, chain controlFn) controlFn {
 
 		return
 	}
+}
+
+func bindIfaceToTFODialer(ifaceName string, dialer *tfo.Dialer, _ string, _ netip.Addr) error {
+	dialer.Control = bindControl(ifaceName, dialer.Control)
+
+	return nil
 }
 
 func bindIfaceToDialer(ifaceName string, dialer *net.Dialer, _ string, _ netip.Addr) error {

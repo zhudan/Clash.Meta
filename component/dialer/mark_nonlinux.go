@@ -3,6 +3,7 @@
 package dialer
 
 import (
+	"github.com/database64128/tfo-go"
 	"net"
 	"net/netip"
 	"sync"
@@ -18,7 +19,7 @@ func printMarkWarn() {
 	})
 }
 
-func bindMarkToDialer(mark int, dialer *net.Dialer, _ string, _ netip.Addr) {
+func bindMarkToDialer(mark int, dialer *tfo.Dialer, _ string, _ netip.Addr) {
 	printMarkWarn()
 }
 

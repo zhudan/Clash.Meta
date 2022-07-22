@@ -55,7 +55,6 @@ type General struct {
 	EnableProcess bool         `json:"enable-process"`
 	Tun           Tun          `json:"tun"`
 	Sniffing      bool         `json:"sniffing"`
-	OutboundTfo   bool         `json:"outbound-tfo"`
 }
 
 // Inbound config
@@ -89,7 +88,6 @@ type DNS struct {
 	Listen                string           `yaml:"listen"`
 	EnhancedMode          C.DNSMode        `yaml:"enhanced-mode"`
 	DefaultNameserver     []dns.NameServer `yaml:"default-nameserver"`
-	tfo                   *bool            `yaml:"tfo"`
 	FakeIPRange           *fakeip.Pool
 	Hosts                 *trie.DomainTrie[netip.Addr]
 	NameServerPolicy      map[string]dns.NameServer
@@ -213,7 +211,6 @@ type RawConfig struct {
 	Secret             string       `yaml:"secret"`
 	Interface          string       `yaml:"interface-name"`
 	RoutingMark        int          `yaml:"routing-mark"`
-	OutboundTfo        bool         `yaml:"outbound-tfo"`
 	GeodataMode        bool         `yaml:"geodata-mode"`
 	GeodataLoader      string       `yaml:"geodata-loader"`
 	TCPConcurrent      bool         `yaml:"tcp-concurrent" json:"tcp-concurrent"`
@@ -441,7 +438,6 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 		IPv6:          cfg.IPv6,
 		Interface:     cfg.Interface,
 		RoutingMark:   cfg.RoutingMark,
-		OutboundTfo:   cfg.OutboundTfo,
 		GeodataMode:   cfg.GeodataMode,
 		GeodataLoader: cfg.GeodataLoader,
 		TCPConcurrent: cfg.TCPConcurrent,
