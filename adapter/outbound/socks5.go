@@ -35,7 +35,6 @@ type Socks5Option struct {
 	UDP            bool   `proxy:"udp,omitempty"`
 	SkipCertVerify bool   `proxy:"skip-cert-verify,omitempty"`
 	Fingerprint    string `proxy:"fingerprint,omitempty"`
-	TFO            bool   `proxy:"tfo,omitempty"`
 }
 
 // StreamConn implements C.ProxyAdapter
@@ -166,7 +165,6 @@ func NewSocks5(option Socks5Option) (*Socks5, error) {
 			udp:   option.UDP,
 			iface: option.Interface,
 			rmark: option.RoutingMark,
-			tfo:   option.TFO,
 		},
 		user:           option.UserName,
 		pass:           option.Password,

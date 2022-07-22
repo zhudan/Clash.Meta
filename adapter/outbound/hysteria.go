@@ -96,7 +96,6 @@ type HysteriaOption struct {
 	ReceiveWindowConn   int    `proxy:"recv_window_conn,omitempty"`
 	ReceiveWindow       int    `proxy:"recv_window,omitempty"`
 	DisableMTUDiscovery bool   `proxy:"disable_mtu_discovery,omitempty"`
-	TFO                 bool   `proxy:"tfo,omitempty"`
 }
 
 func (c *HysteriaOption) Speed() (uint64, uint64, error) {
@@ -223,7 +222,6 @@ func NewHysteria(option HysteriaOption) (*Hysteria, error) {
 			udp:   true,
 			iface: option.Interface,
 			rmark: option.RoutingMark,
-			tfo:   option.TFO,
 		},
 		client: client,
 	}, nil

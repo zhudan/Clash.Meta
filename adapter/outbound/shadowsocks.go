@@ -48,7 +48,6 @@ type ShadowSocksOption struct {
 	Plugin     string         `proxy:"plugin,omitempty"`
 	PluginOpts map[string]any `proxy:"plugin-opts,omitempty"`
 	UDPOverTCP bool           `proxy:"udp-over-tcp,omitempty"`
-	TFO        bool           `proxy:"tfo,omitempty"`
 }
 
 type simpleObfsOption struct {
@@ -193,7 +192,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 			udp:   option.UDP,
 			iface: option.Interface,
 			rmark: option.RoutingMark,
-			tfo:   option.TFO,
 		},
 		method: method,
 

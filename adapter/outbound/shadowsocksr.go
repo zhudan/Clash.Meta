@@ -34,7 +34,6 @@ type ShadowSocksROption struct {
 	Protocol      string `proxy:"protocol"`
 	ProtocolParam string `proxy:"protocol-param,omitempty"`
 	UDP           bool   `proxy:"udp,omitempty"`
-	TFO           bool   `proxy:"tfo,omitempty"`
 }
 
 // StreamConn implements C.ProxyAdapter
@@ -150,7 +149,6 @@ func NewShadowSocksR(option ShadowSocksROption) (*ShadowSocksR, error) {
 			udp:   option.UDP,
 			iface: option.Interface,
 			rmark: option.RoutingMark,
-			tfo:   option.TFO,
 		},
 		cipher:   coreCiph,
 		obfs:     obfs,

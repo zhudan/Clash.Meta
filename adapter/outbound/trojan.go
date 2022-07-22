@@ -43,7 +43,6 @@ type TrojanOption struct {
 	WSOpts         WSOptions   `proxy:"ws-opts,omitempty"`
 	Flow           string      `proxy:"flow,omitempty"`
 	FlowShow       bool        `proxy:"flow-show,omitempty"`
-	TFO            bool        `proxy:"tfo,omitempty"`
 }
 
 func (t *Trojan) plainStream(c net.Conn) (net.Conn, error) {
@@ -216,7 +215,6 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 			udp:   option.UDP,
 			iface: option.Interface,
 			rmark: option.RoutingMark,
-			tfo:   option.TFO,
 		},
 		instance: trojan.New(tOption),
 		option:   &option,
