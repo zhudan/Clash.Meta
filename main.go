@@ -76,6 +76,7 @@ func main() {
 		}
 		C.SetConfig(configFile)
 	} else {
+		configFile = filepath.Join(C.Path.HomeDir(), C.Path.Config())
 		C.SetConfig(configFile)
 	}
 
