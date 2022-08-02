@@ -60,15 +60,16 @@ type General struct {
 
 // Inbound config
 type Inbound struct {
-	Port           int      `json:"port"`
-	SocksPort      int      `json:"socks-port"`
-	RedirPort      int      `json:"redir-port"`
-	TProxyPort     int      `json:"tproxy-port"`
-	MixedPort      int      `json:"mixed-port"`
-	Authentication []string `json:"authentication"`
-	AllowLan       bool     `json:"allow-lan"`
-	BindAddress    string   `json:"bind-address"`
-	InboundTfo     bool     `json:"inbound-tfo"`
+	Port           int         `json:"port"`
+	SocksPort      int         `json:"socks-port"`
+	RedirPort      int         `json:"redir-port"`
+	TProxyPort     int         `json:"tproxy-port"`
+	MixedPort      int         `json:"mixed-port"`
+	Shadowsocks    Shadowsocks `json:"-"`
+	Authentication []string    `json:"authentication"`
+	AllowLan       bool        `json:"allow-lan"`
+	BindAddress    string      `json:"bind-address"`
+	InboundTfo     bool        `json:"inbound-tfo"`
 }
 
 // Controller config
@@ -200,6 +201,7 @@ type RawConfig struct {
 	RedirPort          int          `yaml:"redir-port"`
 	TProxyPort         int          `yaml:"tproxy-port"`
 	MixedPort          int          `yaml:"mixed-port"`
+	Shadowsocks        Shadowsocks  `yaml:"shadowsocks"`
 	InboundTfo         bool         `yaml:"inbound-tfo"`
 	Authentication     []string     `yaml:"authentication"`
 	AllowLan           bool         `yaml:"allow-lan"`
@@ -252,6 +254,11 @@ type RawSniffer struct {
 type EBpf struct {
 	RedirectToTun []string `yaml:"redirect-to-tun" json:"redirect-to-tun"`
 	AutoRedir     []string `yaml:"auto-redir" json:"auto-redir"`
+}
+type Shadowsocks struct {
+	Port     int    `yaml:"port" json:"port"`
+	Cipher   string `yaml:"cipher" json:"cipher"`
+	Password string `yaml:"password" json:"password"`
 }
 
 var (
@@ -432,6 +439,7 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 			RedirPort:   cfg.RedirPort,
 			TProxyPort:  cfg.TProxyPort,
 			MixedPort:   cfg.MixedPort,
+			Shadowsocks: cfg.Shadowsocks,
 			AllowLan:    cfg.AllowLan,
 			BindAddress: cfg.BindAddress,
 			InboundTfo:  cfg.InboundTfo,

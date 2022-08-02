@@ -336,6 +336,7 @@ func updateGeneral(general *config.General, force bool) {
 	P.ReCreateMixed(general.MixedPort, tcpIn, udpIn)
 	P.ReCreateAutoRedir(general.EBpf.AutoRedir, tcpIn, udpIn)
 	P.ReCreateRedirToTun(general.EBpf.RedirectToTun)
+	P.ReCreateShadowsocks(general.Shadowsocks.Port, general.Shadowsocks.Cipher, general.Shadowsocks.Password, tcpIn, udpIn)
 }
 
 func updateUsers(users []auth.AuthUser) {

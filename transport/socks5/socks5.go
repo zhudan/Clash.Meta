@@ -94,6 +94,7 @@ const (
 	ErrTTLExpired           = Error(6)
 	ErrCommandNotSupported  = Error(7)
 	ErrAddressNotSupported  = Error(8)
+	InfoUDPAssociate        = Error(9)
 )
 
 // Auth errors used to return a specific "Auth failed" error

@@ -71,14 +71,14 @@ func NewUDP(addr string, in chan<- *inbound.PacketAdapter) (*UDPListener, error)
 			if err != nil {
 				continue
 			}
-			handlePacketConn(l, in, buf[:n], lAddr, rAddr)
+			HandlePacketConn(l, in, buf[:n], lAddr, rAddr)
 		}
 	}()
 
 	return rl, nil
 }
 
-func handlePacketConn(pc net.PacketConn, in chan<- *inbound.PacketAdapter, buf []byte, lAddr *net.UDPAddr, rAddr *net.UDPAddr) {
+func HandlePacketConn(pc net.PacketConn, in chan<- *inbound.PacketAdapter, buf []byte, lAddr *net.UDPAddr, rAddr *net.UDPAddr) {
 	target := socks5.ParseAddrToSocksAddr(rAddr)
 	pkt := &packet{
 		lAddr: lAddr,

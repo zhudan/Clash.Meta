@@ -26,6 +26,7 @@ const (
 	TPROXY
 	TUN
 	INNER
+	SHADOWSOCKS
 )
 
 type NetWork int
@@ -63,6 +64,8 @@ func (t Type) String() string {
 		return "Tun"
 	case INNER:
 		return "Inner"
+	case SHADOWSOCKS:
+		return "Shadowsocks"
 	default:
 		return "Unknown"
 	}

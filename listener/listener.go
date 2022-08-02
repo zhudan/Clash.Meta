@@ -5,7 +5,9 @@ import (
 	"github.com/Dreamacro/clash/component/ebpf"
 	"github.com/Dreamacro/clash/listener/autoredir"
 	"github.com/Dreamacro/clash/listener/inner"
+	"github.com/Dreamacro/clash/listener/shadowsocks"
 	"github.com/Dreamacro/clash/listener/tun/ipstack/commons"
+	"github.com/Dreamacro/clash/transport/shadowsocks/core"
 	"golang.org/x/exp/slices"
 	"net"
 	"sort"
@@ -31,29 +33,32 @@ var (
 	lastTunConf *config.Tun
 	inboundTfo  = false
 
-	socksListener     *socks.Listener
-	socksUDPListener  *socks.UDPListener
-	httpListener      *http.Listener
-	redirListener     *redir.Listener
-	redirUDPListener  *tproxy.UDPListener
-	tproxyListener    *tproxy.Listener
-	tproxyUDPListener *tproxy.UDPListener
-	mixedListener     *mixed.Listener
-	mixedUDPLister    *socks.UDPListener
-	tunStackListener  ipstack.Stack
-	tcProgram         *ebpf.TcEBpfProgram
-	autoRedirListener *autoredir.Listener
-	autoRedirProgram  *ebpf.TcEBpfProgram
+	socksListener          *socks.Listener
+	socksUDPListener       *socks.UDPListener
+	httpListener           *http.Listener
+	redirListener          *redir.Listener
+	redirUDPListener       *tproxy.UDPListener
+	tproxyListener         *tproxy.Listener
+	tproxyUDPListener      *tproxy.UDPListener
+	mixedListener          *mixed.Listener
+	mixedUDPLister         *socks.UDPListener
+	tunStackListener       ipstack.Stack
+	tcProgram              *ebpf.TcEBpfProgram
+	autoRedirListener      *autoredir.Listener
+	autoRedirProgram       *ebpf.TcEBpfProgram
+	shadowsocksListener    *shadowsocks.Listener
+	shadowsocksUDPListener *shadowsocks.UDPListener
 
 	// lock for recreate function
-	socksMux     sync.Mutex
-	httpMux      sync.Mutex
-	redirMux     sync.Mutex
-	tproxyMux    sync.Mutex
-	mixedMux     sync.Mutex
-	tunMux       sync.Mutex
-	autoRedirMux sync.Mutex
-	tcMux        sync.Mutex
+	socksMux       sync.Mutex
+	httpMux        sync.Mutex
+	redirMux       sync.Mutex
+	tproxyMux      sync.Mutex
+	mixedMux       sync.Mutex
+	tunMux         sync.Mutex
+	autoRedirMux   sync.Mutex
+	tcMux          sync.Mutex
+	shadowsocksMux sync.Mutex
 )
 
 type Ports struct {
@@ -449,6 +454,64 @@ func ReCreateRedirToTun(ifaceNames []string) {
 	tcProgram = program
 
 	log.Infoln("Attached tc ebpf program to interfaces %v", tcProgram.RawNICs())
+}
+
+func ReCreateShadowsocks(port int, cipher string, password string, tcpIn chan<- C.ConnContext, udpIn chan<- *inbound.PacketAdapter) {
+	shadowsocksMux.Lock()
+	defer shadowsocksMux.Unlock()
+
+	var err error
+	defer func() {
+		if err != nil {
+			log.Errorln("Start Shadowsocks server error: %s", err.Error())
+		}
+	}()
+
+	addr := genAddr(bindAddress, port, allowLan)
+
+	shouldTCPIgnore := false
+	shouldUDPIgnore := false
+
+	if shadowsocksListener != nil {
+		if shadowsocksListener.RawAddress() != addr {
+			shadowsocksListener.Close()
+			shadowsocksListener = nil
+		} else {
+			shouldTCPIgnore = true
+		}
+	}
+
+	if shadowsocksUDPListener != nil {
+		if shadowsocksUDPListener.RawAddress() != addr {
+			shadowsocksUDPListener.Close()
+			shadowsocksUDPListener = nil
+		} else {
+			shouldUDPIgnore = true
+		}
+	}
+
+	if shouldTCPIgnore && shouldUDPIgnore {
+		return
+	}
+
+	if portIsZero(addr) {
+		return
+	}
+
+	ciph, err := core.PickCipher(cipher, nil, password)
+	tcpListener, err := shadowsocks.New(addr, ciph.StreamConn, inboundTfo, tcpIn)
+	if err != nil {
+		return
+	}
+
+	udpListener, err := shadowsocks.NewUDP(addr, ciph.PacketConn, udpIn)
+	if err != nil {
+		tcpListener.Close()
+		return
+	}
+	shadowsocksListener = tcpListener
+	shadowsocksUDPListener = udpListener
+	log.Infoln("Shadowsocks proxy listening at: %s", shadowsocksListener.Address())
 }
 
 // GetPorts return the ports of proxy servers
