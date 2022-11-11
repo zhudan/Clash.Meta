@@ -69,6 +69,7 @@ func New(options config.Tun, tcpIn chan<- C.ConnContext, udpIn chan<- *inbound.P
 	tunName := options.Device
 	if tunName == "" {
 		tunName = CalculateInterfaceName(InterfaceName)
+		options.Device = tunName
 	}
 	tunMTU := options.MTU
 	if tunMTU == 0 {
@@ -209,7 +210,7 @@ func New(options config.Tun, tcpIn chan<- C.ConnContext, udpIn chan<- *inbound.P
 		return
 	}
 
-	l.openAndroidHotspot(tunOptions)
+	//l.openAndroidHotspot(tunOptions)
 
 	log.Infoln("[TUN] Tun adapter listening at: %s(%s,%s), mtu: %d, auto route: %v, ip stack: %s",
 		tunName, tunOptions.Inet4Address, tunOptions.Inet6Address, tunMTU, options.AutoRoute, options.Stack)

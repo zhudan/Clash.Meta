@@ -122,20 +122,20 @@ type Tun struct {
 	RedirectToTun       []string         `yaml:"-" json:"-"`
 
 	MTU                    uint32         `yaml:"mtu" json:"mtu,omitempty"`
-	Inet4Address           []ListenPrefix `yaml:"inet4-address" json:"inet4_address,omitempty"`
-	Inet6Address           []ListenPrefix `yaml:"inet6-address" json:"inet6_address,omitempty"`
-	StrictRoute            bool           `yaml:"strict-route" json:"strict_route,omitempty"`
-	Inet4RouteAddress      []ListenPrefix `yaml:"inet4_route_address" json:"inet4_route_address,omitempty"`
-	Inet6RouteAddress      []ListenPrefix `yaml:"inet6_route_address" json:"inet6_route_address,omitempty"`
-	IncludeUID             []uint32       `yaml:"include-uid" json:"include_uid,omitempty"`
-	IncludeUIDRange        []string       `yaml:"include-uid-range" json:"include_uid_range,omitempty"`
-	ExcludeUID             []uint32       `yaml:"exclude-uid" json:"exclude_uid,omitempty"`
-	ExcludeUIDRange        []string       `yaml:"exclude-uid-range" json:"exclude_uid_range,omitempty"`
-	IncludeAndroidUser     []int          `yaml:"include-android-user" json:"include_android_user,omitempty"`
-	IncludePackage         []string       `yaml:"include-package" json:"include_package,omitempty"`
-	ExcludePackage         []string       `yaml:"exclude-package" json:"exclude_package,omitempty"`
-	EndpointIndependentNat bool           `yaml:"endpoint-independent-nat" json:"endpoint_independent_nat,omitempty"`
-	UDPTimeout             int64          `yaml:"udp-timeout" json:"udp_timeout,omitempty"`
+	Inet4Address           []ListenPrefix `yaml:"inet4-address" json:"inet4-address,omitempty"`
+	Inet6Address           []ListenPrefix `yaml:"inet6-address" json:"inet6-address,omitempty"`
+	StrictRoute            bool           `yaml:"strict-route" json:"strict-route,omitempty"`
+	Inet4RouteAddress      []ListenPrefix `yaml:"inet4-route-address" json:"inet4-route-address,omitempty"`
+	Inet6RouteAddress      []ListenPrefix `yaml:"inet6-route-address" json:"inet6-route-address,omitempty"`
+	IncludeUID             []uint32       `yaml:"include-uid" json:"include-uid,omitempty"`
+	IncludeUIDRange        []string       `yaml:"include-uid-range" json:"include-uid-range,omitempty"`
+	ExcludeUID             []uint32       `yaml:"exclude-uid" json:"exclude-uid,omitempty"`
+	ExcludeUIDRange        []string       `yaml:"exclude-uid-range" json:"exclude-uid-range,omitempty"`
+	IncludeAndroidUser     []int          `yaml:"include-android-user" json:"include-android-user,omitempty"`
+	IncludePackage         []string       `yaml:"include-package" json:"include-package,omitempty"`
+	ExcludePackage         []string       `yaml:"exclude-package" json:"exclude-package,omitempty"`
+	EndpointIndependentNat bool           `yaml:"endpoint-independent-nat" json:"endpoint-independent-nat,omitempty"`
+	UDPTimeout             int64          `yaml:"udp-timeout" json:"udp-timeout,omitempty"`
 }
 
 type ListenPrefix netip.Prefix
@@ -214,7 +214,6 @@ type Experimental struct {
 // Config is clash config manager
 type Config struct {
 	General       *General
-	Tun           *Tun
 	IPTables      *IPTables
 	DNS           *DNS
 	Experimental  *Experimental
@@ -503,11 +502,10 @@ func ParseRawConfig(rawCfg *RawConfig) (*Config, error) {
 	}
 	config.DNS = dnsCfg
 
-	tunCfg, err := parseTun(rawCfg.Tun, config.General, dnsCfg)
+	err = parseTun(rawCfg.Tun, config.General)
 	if err != nil {
 		return nil, err
 	}
-	config.Tun = tunCfg
 
 	config.Users = parseAuthentication(rawCfg.Authentication)
 
@@ -1063,8 +1061,9 @@ func parseDNS(rawCfg *RawConfig, hosts *trie.DomainTrie[netip.Addr], rules []C.R
 		}
 	}
 
+	fakeIPRange, err := netip.ParsePrefix(cfg.FakeIPRange)
+	T.SetFakeIPRange(fakeIPRange)
 	if cfg.EnhancedMode == C.DNSFakeIP {
-		ipnet, err := netip.ParsePrefix(cfg.FakeIPRange)
 		if err != nil {
 			return nil, err
 		}
@@ -1091,7 +1090,7 @@ func parseDNS(rawCfg *RawConfig, hosts *trie.DomainTrie[netip.Addr], rules []C.R
 		}
 
 		pool, err := fakeip.New(fakeip.Options{
-			IPNet:       &ipnet,
+			IPNet:       &fakeIPRange,
 			Size:        1000,
 			Host:        host,
 			Persistence: rawCfg.Profile.StoreFakeIP,
@@ -1134,7 +1133,7 @@ func parseAuthentication(rawRecords []string) []auth.AuthUser {
 	return users
 }
 
-func parseTun(rawTun RawTun, general *General, dnsCfg *DNS) (*Tun, error) {
+func parseTun(rawTun RawTun, general *General) error {
 	var dnsHijack []netip.AddrPort
 
 	for _, d := range rawTun.DNSHijack {
@@ -1144,21 +1143,19 @@ func parseTun(rawTun RawTun, general *General, dnsCfg *DNS) (*Tun, error) {
 		d = strings.Replace(d, "any", "0.0.0.0", 1)
 		addrPort, err := netip.ParseAddrPort(d)
 		if err != nil {
-			return nil, fmt.Errorf("parse dns-hijack url error: %w", err)
+			return fmt.Errorf("parse dns-hijack url error: %w", err)
 		}
 
 		dnsHijack = append(dnsHijack, addrPort)
 	}
 
-	var tunAddressPrefix netip.Prefix
-	if dnsCfg.FakeIPRange != nil {
-		tunAddressPrefix = *dnsCfg.FakeIPRange.IPNet()
-	} else {
+	tunAddressPrefix := T.FakeIPRange()
+	if !tunAddressPrefix.IsValid() {
 		tunAddressPrefix = netip.MustParsePrefix("198.18.0.1/16")
 	}
 	tunAddressPrefix = netip.PrefixFrom(tunAddressPrefix.Addr(), 30)
 
-	return &Tun{
+	general.Tun = Tun{
 		Enable:              rawTun.Enable,
 		Device:              rawTun.Device,
 		Stack:               rawTun.Stack,
@@ -1182,7 +1179,9 @@ func parseTun(rawTun RawTun, general *General, dnsCfg *DNS) (*Tun, error) {
 		ExcludePackage:         rawTun.ExcludePackage,
 		EndpointIndependentNat: rawTun.EndpointIndependentNat,
 		UDPTimeout:             rawTun.UDPTimeout,
-	}, nil
+	}
+
+	return nil
 }
 
 func parseSniffer(snifferRaw RawSniffer) (*Sniffer, error) {
