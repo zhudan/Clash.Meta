@@ -1,7 +1,8 @@
 # port: 7890 # HTTP(S) 代理服务器端口
 # socks-port: 7891 # SOCKS5 代理端口
 mixed-port: 10801 # HTTP(S) 和 SOCKS 代理混合端口
-# redir-port: 7892 # 透明代理端口，用于 Linux 和 MacOS#shadowsocks: #shadowsocks入站
+# redir-port: 7892 # 透明代理端口，用于 Linux 和 MacOS
+#shadowsocks: #shadowsocks入站
 #  port: 29999
 #  cipher: aes-256-gcm #如proxies shadowsocks的cipher支持
 #  password: "password"
@@ -65,10 +66,10 @@ tun:
     #- 1000
   # exclude_uid_range: # 排除路由的的用户范围
     # - 1000-99999
-    
+
   # Android 用户和应用规则仅在 Android 下被支持
   # 并且需要 auto_route
-  
+
   # include_android_user: # 限制被路由的 Android 用户
     # - 0
     # - 10
@@ -76,7 +77,7 @@ tun:
     # - com.android.chrome
   # exclude_package: # 排除被路由的 Android 应用包名
     # - com.android.captiveportallogin
-  
+
 #ebpf配置
 ebpf:
   auto-redir: # redirect 模式，仅支持 TCP
@@ -422,7 +423,7 @@ proxies:
       path: "/"
       headers:
         Host: example.com
-  
+
   #hysteria
   - name: "hysteria"
     type: hysteria
